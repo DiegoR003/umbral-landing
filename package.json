@@ -1,0 +1,25 @@
+{
+  "name": "umbral-landing",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Landing de la coleccion de hoteles UMBRAL — ciclo de luz de un dia, parallax y escena 3D atmosferica.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^8.17.10",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.14",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "simple-parallax-js": "^5.6.2",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "vite": "^5.4.10"
+  }
+}

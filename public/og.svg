@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="s" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B0E1F"/>
+      <stop offset="1" stop-color="#2E3A44"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#s)"/>
+  <circle cx="880" cy="250" r="52" fill="#C9A227" opacity="0.9"/>
+  <path d="M0 470 L140 400 L300 460 L470 380 L640 450 L820 390 L1000 455 L1200 405 L1200 630 L0 630 Z" fill="#121733"/>
+  <path d="M0 530 L180 490 L360 540 L560 480 L760 535 L980 495 L1200 540 L1200 630 L0 630 Z" fill="#04060C"/>
+  <text x="80" y="180" font-family="Georgia, serif" font-size="86" letter-spacing="22" fill="#EFE9E1">UMBRAL</text>
+  <text x="84" y="240" font-family="monospace" font-size="26" letter-spacing="7" fill="#8E9AA3">TRES CASAS · UN DIA ENTERO</text>
+</svg>
