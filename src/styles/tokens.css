@@ -1,29 +1,23 @@
 /* ───────────────────────────────────────────────────────────────
-   UMBRAL — tokens
-   --bg, --fg y --accent los reescribe dayCycle.js en cada frame.
-   Los valores de aqui son solo el estado inicial (05:40, Alba).
+   FINISTERRA — tokens
+   Paleta fija: roca caliza, mar de Cortes, hora dorada. A diferencia
+   de la version anterior no hay ciclo de luz — la foto ya trae su
+   propia luz, fija, y el sitio se construye alrededor de ella.
    ─────────────────────────────────────────────────────────────── */
 
 :root {
-  /* luz viva */
-  --bg: #14161b;
-  --fg: #efe9e1;
-  --accent: #8e9aa3;
+  --bg: #0b2430;
+  --fg: #f5f1e8;
+  --accent: #e0793c;
+  --accent-2: #4fb3ac;
 
-  /* derivados: siempre relativos a la hora actual, nunca fijos */
-  --fg-soft: color-mix(in oklab, var(--fg) 66%, var(--bg));
-  --fg-mute: color-mix(in oklab, var(--fg) 54%, var(--bg));
-  --rule: color-mix(in oklab, var(--fg) 16%, var(--bg));
-  --rule-strong: color-mix(in oklab, var(--fg) 30%, var(--bg));
-  --scrim: color-mix(in oklab, var(--bg) 82%, transparent);
+  --fg-soft: color-mix(in oklab, var(--fg) 78%, var(--bg));
+  --fg-mute: color-mix(in oklab, var(--fg) 58%, var(--bg));
+  --rule: color-mix(in oklab, var(--fg) 22%, var(--bg));
+  --rule-strong: color-mix(in oklab, var(--fg) 38%, var(--bg));
+  --scrim: color-mix(in oklab, var(--bg) 78%, transparent);
+  --glass: color-mix(in oklab, var(--bg) 62%, transparent);
 
-  /* material fijo de la marca */
-  --basalto: #14161b;
-  --cal: #efe9e1;
-  --copal: #c9a227;
-  --jade: #3e6b60;
-
-  /* tipografia */
   --display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
   --body: 'Instrument Sans', system-ui, -apple-system, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
@@ -36,13 +30,11 @@
   --step-4: clamp(2.9rem, 1.8rem + 5.4vw, 6.8rem);
   --step-5: clamp(3.6rem, 1.9rem + 8.4vw, 10rem);
 
-  /* ritmo vertical: los sitios caros respiran */
   --gutter: clamp(1.25rem, 4vw, 3.5rem);
   --rail: clamp(3.25rem, 7vw, 7.5rem);
   --section-y: clamp(6rem, 13vh, 12.5rem);
   --measure: 34ch;
 
-  /* timing */
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
   --t-fast: 240ms;

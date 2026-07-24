@@ -1,12 +1,15 @@
-# UMBRAL — landing de hoteles y servicios turísticos
+# FINISTERRA — tours en lancha a El Arco, Cabo San Lucas
 
-Landing de una colección de tres casas de reposo en México. El scroll de la
-página es un día completo: la paleta del sitio, la escena 3D y la posición del
-sol se interpolan entre cinco horas reales, de las 05:40 a las 21:40.
+Landing de una sola pantalla larga. El fondo es **una sola fotografía real**
+de El Arco (Land's End), fija todo el recorrido — no es una imagen gigante
+que se recorre, es la misma toma del principio al final, como una ventana
+que no se mueve. Lo que avanza con el scroll son los textos: cada parada
+cuenta un momento del tour, de la salida en la marina al regreso con la
+hora dorada.
 
-Stack: **React 18 + Vite**, **three.js / @react-three/fiber** para la
-atmósfera, **simple-parallax-js** para el parallax de las imágenes, **Lenis +
-GSAP ScrollTrigger** para el scroll con inercia.
+Stack: **React 18 + Vite**, **Lenis + GSAP ticker** para el scroll con
+inercia, cero librerías de imagen — el efecto es CSS (`position: fixed`)
+más un `IntersectionObserver` para el texto.
 
 ---
 
@@ -32,118 +35,99 @@ Node 18 o superior.
 ├─ index.html                  meta, OG, tipografías
 ├─ vite.config.js
 ├─ public/
-│  ├─ favicon.svg  og.svg
-│  └─ parallax/                8 imágenes SVG (68 kB en total)
+│  ├─ favicon.svg  og.jpg
+│  └─ hero/                    la fotografia, en avif/webp/jpg y 3 anchos
 └─ src/
    ├─ main.jsx  App.jsx
-   ├─ dayCycle.js              ← el motor del ciclo de luz
    ├─ data/
-   │  ├─ houses.js             las tres casas
-   │  └─ experiences.js        los servicios, ordenados por hora
+   │  └─ story.js              marca, nav, paradas del recorrido, tour
    ├─ hooks/
-   │  ├─ useSmoothScroll.js    Lenis + ScrollTrigger + progreso de página
+   │  ├─ useSmoothScroll.js     Lenis + ticker de GSAP
+   │  ├─ useScrollProgress.js   progreso 0..1 entregado por referencia
    │  ├─ useReducedMotion.js
-   │  └─ useReveal.js          revelado con IntersectionObserver
-   ├─ three/
-   │  ├─ Sky.jsx               detecta WebGL y monta el canvas en idle
-   │  ├─ SkyCanvas.jsx         aísla todo three.js en su propio chunk
-   │  ├─ Scene.jsx             cielo, sol, crestas y niebla
-   │  └─ geometry.js           siluetas de sierra procedurales
+   │  └─ useReveal.js           revelado por parada con IntersectionObserver
    ├─ components/
-   │  ├─ Parallax.jsx          envoltura de simple-parallax-js
-   │  ├─ Chrome.jsx            nav, riel de horas, pie
-   │  ├─ Hero.jsx  House.jsx  Experiences.jsx  Booking.jsx
+   │  ├─ StoryHero.jsx          la foto de fondo, fija, con zoom lentisimo
+   │  ├─ Nav.jsx  ProgressRail.jsx  Footer.jsx
+   │  ├─ StoryStops.jsx         las paradas: kicker + titular + texto
+   │  └─ BookingCard.jsx        tarjeta final + formulario de reserva
    └─ styles/
-      ├─ tokens.css            paleta, escala tipográfica, easings
+      ├─ tokens.css             paleta fija, escala tipográfica, easings
       └─ global.css
 ```
 
 ---
 
-## Cómo funciona el ciclo de luz
+## Por que una sola foto fija
 
-`src/dayCycle.js` mantiene un único valor de progreso (0 = 05:40, 1 = 21:40)
-que alimenta el scroll. En cada frame interpola la paleta entre las horas
-definidas en `HOURS` y escribe el resultado como variables CSS en `:root`.
+No hay galería ni carrusel: la foto de El Arco vive en `.story-bg`,
+`position: fixed`, detrás de todo (`z-index: 0`), y nunca cambia de
+posición ni de recorte. Lo único que se mueve es un *zoom* casi
+imperceptible (`scale(1 → 1.08)`) atado al progreso de scroll, para que
+el fondo no se sienta muerto — se apaga por completo con
+`prefers-reduced-motion`.
 
-Vive **fuera de React** a propósito: se actualiza 60 veces por segundo y un
-`setState` a esa frecuencia repintaría el árbol entero. La escena 3D lee los
-mismos colores desde ahí, así que canvas y DOM nunca se desincronizan.
+El contenido (`.page`, z-index 1) fluye normal por encima: cada parada de
+`src/data/story.js` es una sección de `100svh` con el texto anclado abajo
+a la izquierda, igual que iría cayendo el ojo si estuvieras de verdad en
+la proa de la lancha. El texto se revela con `useReveal` (el mismo
+`IntersectionObserver` de la versión anterior del sitio) — nada de scroll
+hijacking ni de medir el alto exacto de cada sección a mano.
 
-La interpolación es en espacio lineal, no en sRGB. Cruzar dos colores en sRGB
-pasa por un gris lodoso en el punto medio; en lineal el cambio de luz se ve
-como luz.
-
-**Para cambiar las horas o los colores**, edita el arreglo `HOURS`. Cada parada
-lleva `at` (posición en el scroll, 0..1), los colores del DOM (`bg`, `fg`,
-`accent`), los de la escena (`skyTop`, `skyLow`, `ridge`, `sun`), la altura del
-sol (`sunY`, de -0.5 a 0.5) y la densidad de niebla (`haze`, 0..1).
-
-> Ningún componente escribe un color a mano. Todo se deriva de `--bg`, `--fg` y
-> `--accent` con `color-mix()`. Si agregas una sección, usa esos tokens o se
-> romperá cuando la página amanezca.
+**Para cambiar el recorrido**, edita el arreglo `stops` en
+`src/data/story.js`. Cada parada lleva `kicker`, `title` y `text`. La
+primera (`bienvenida`) se muestra sin esperar scroll; el resto se revela
+al entrar en viewport.
 
 ---
 
-## Reemplazar las imágenes por fotografía
+## La fotografía
 
-Las ocho imágenes de `public/parallax/` son ilustraciones duotono generadas
-proceduralmente, en la paleta de la marca. Son placeholders art-directed: la
-página se ve terminada sin fotos, pero están hechas para reemplazarse.
+`public/hero/` son derivados de `public/63.jpg` — una lancha de tour
+acercándose a El Arco. **Pendiente: confirmar fuente y licencia** antes
+de publicar el sitio; por eso `credit` en `src/data/story.js` está en
+`null` y el pie de página no muestra ningún crédito. Si tiene licencia
+que exige atribución, complétalo ahí — el componente `Footer.jsx` ya sabe
+mostrarlo condicionalmente.
 
-1. Sustituye los archivos en `public/parallax/` (mismo nombre, o actualiza la
-   ruta en `src/data/houses.js` y `src/data/experiences.js`).
-2. Usa retrato, mínimo 1400 px de ancho. El marco recorta a `4/5` en las casas
-   y a `3/4` en las experiencias, y simple-parallax escala un 22–30% más, así
-   que deja aire arriba y abajo del sujeto.
-3. Actualiza el `alt`. Está en los mismos archivos de datos, junto a la imagen.
+La imagen original es de resolución modesta (670×446, horizontal) y el
+recorte a retrato la escala hacia arriba y recorta bastante a los lados
+— por eso `object-position` en `.story-bg__img` (`global.css`) está
+afinado a mano para dejar la lancha y el arco dentro del encuadre.
+Si consigues una version de mayor resolucion del mismo angulo, el
+reemplazo es directo.
 
-Formato recomendado: AVIF o WebP. Presupuesto: menos de 250 kB por imagen.
+Se generaron derivados con `sharp-cli`:
+`hero-2400.avif`, `hero-2400.webp`, `hero-2400.jpg` (fallback) y
+`hero-1200.webp` / `hero-800.webp` para pantallas chicas. El navegador
+elige el primero que soporte vía el `<picture>` de `StoryHero.jsx`.
 
----
+**Para reemplazar la foto**, corre algo equivalente sobre tu propia
+imagen y actualiza las rutas en `StoryHero.jsx` y el crédito en
+`src/data/story.js`:
 
-## Parallax
-
-`src/components/Parallax.jsx` envuelve simple-parallax-js. Tres decisiones que
-conviene conocer antes de tocarlo:
-
-- La librería se importa con `import()` diferido. Si falla, o si el usuario
-  pidió menos movimiento, la imagen se queda quieta y la página sigue intacta.
-  El parallax nunca es requisito para ver el contenido.
-- Se inicializa en el evento `load` de la imagen, porque la librería necesita
-  las dimensiones reales para calcular el desplazamiento.
-- **simple-parallax envuelve tu `<img>` en un `div.simpleParallax` propio.** Ese
-  wrapper hereda alto automático y colapsa a cero dentro de un marco con
-  `aspect-ratio`. Por eso `global.css` lo fuerza a llenar el marco. Si agregas
-  un marco nuevo, añade su selector ahí o la imagen desaparecerá.
-
-Props útiles: `scale` (1.2–1.35 se ve bien; más se nota falso), `delay`,
-`orientation`.
+```bash
+npx sharp-cli -i tu-foto.jpg -o "hero-2400.{output.ext}" -f webp -q 76 resize 2400
+```
 
 ---
 
 ## Rendimiento y accesibilidad
 
-El bundle inicial es de ~101 kB gzip. Todo three.js (222 kB gzip) vive en un
-chunk aparte que se descarga en `requestIdleCallback`, ya pasado el primer
-render: el canvas nunca compite con el LCP.
-
-- Sin WebGL, `.sky__fallback` deja un degradado CSS que **sigue cambiando de
-  hora con el scroll**, porque usa las mismas variables.
-- En equipos de gama baja (≤4 núcleos o móvil) el DPR baja a 1.25 y se apaga el
-  antialiasing.
-- La escena son ~10 draw calls: cinco crestas, tres capas de niebla, el cielo y
-  el sol. No hay modelos ni texturas que cargar.
-- `prefers-reduced-motion`: se apagan Lenis, el parallax y la animación del
-  canvas, que pasa a `frameloop="demand"`. Aun así se repinta al hacer scroll,
-  para que la hora del día avance en lugar de congelarse en el frame 0.
-- Todo el texto existe en el DOM sin JS. Navegación completa con Tab, foco
-  visible, y contraste AA verificado en las cinco horas del ciclo.
+- La foto se sirve en AVIF/WebP con JPEG de respaldo, tres anchos, y
+  `fetchpriority="high"` porque es el elemento más grande del primer
+  render (LCP).
+- Sin three.js, sin simple-parallax: el bundle es solo React + Lenis +
+  GSAP (el ticker, no ScrollTrigger).
+- `prefers-reduced-motion`: se apaga Lenis, el zoom del fondo y las
+  transiciones de revelado — el contenido aparece completo de inmediato.
+- Todo el texto existe en el DOM sin JS. Navegación completa con Tab,
+  foco visible, contraste AA verificado contra el scrim de la foto.
 
 ---
 
 ## Conectar el formulario
 
-`src/components/Booking.jsx` valida y muestra una confirmación local. El punto
-de integración está marcado con un comentario en `onSubmit`: ahí va tu POST al
-motor de reservas o al CRM.
+`src/components/BookingCard.jsx` valida y muestra una confirmación local.
+El punto de integración está marcado con un comentario en `onSubmit`: ahí
+va tu POST al motor de reservas o al WhatsApp Business API.

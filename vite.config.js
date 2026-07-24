@@ -6,11 +6,5 @@ export default defineConfig({
   server: { port: 5173, open: true },
   build: {
     target: 'es2020',
-    rollupOptions: {
-      output: {
-        // three es pesado: se separa para que no bloquee el primer render
-        manualChunks: { three: ['three', '@react-three/fiber'] },
-      },
-    },
   },
 })
